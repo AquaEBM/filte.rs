@@ -223,7 +223,7 @@ where
     }
 }
 
-#[cfg(feature = "transfer_funcs")]
+#[cfg(feature = "num")]
 pub mod transfer {
 
     use super::*;

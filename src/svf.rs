@@ -355,7 +355,7 @@ where
     }
 }
 
-#[cfg(feature = "transfer_funcs")]
+#[cfg(feature = "num")]
 pub mod impedence {
 
     use super::*;

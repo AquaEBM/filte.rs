@@ -1,6 +1,6 @@
 #![feature(portable_simd)]
 
-#[cfg(feature = "transfer_funcs")]
+#[cfg(feature = "num")]
 use ::num::{Complex, Float, One};
 
 #[cfg(feature = "nih_plug")]

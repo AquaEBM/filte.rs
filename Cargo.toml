@@ -11,7 +11,6 @@ num = { version = "0.4", optional = true }
 
 [features]
 
-default = ["std_simd", "transfer_funcs"]
+default = ["std_simd", "num"]
 core_simd_crate = ["simd_util/core_simd_crate"]
 std_simd = ["simd_util/std_simd"]
-transfer_funcs = ["dep:num"]
