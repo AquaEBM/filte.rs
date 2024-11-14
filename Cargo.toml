@@ -1,0 +1,17 @@
+[package]
+name = "filte"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+simd_util = { git = "https://github.com/AquaEBM/simd_util", default-features = false }
+nih_plug = { git = "https://github.com/robbert-vdh/nih-plug.git", optional = true }
+num = { version = "0.4", optional = true }
+
+[features]
+
+default = ["std_simd", "transfer_funcs"]
+core_simd_crate = ["simd_util/core_simd_crate"]
+std_simd = ["simd_util/std_simd"]
+transfer_funcs = ["dep:num"]
