@@ -1,15 +1,25 @@
 #![feature(portable_simd)]
 
+use simd_util::{
+    math,
+    simd::{num::SimdFloat, LaneCount, Simd, StdFloat, SupportedLaneCount},
+    smoothing::{LogSmoother, Smoother},
+    VFloat, FLOATS_PER_VECTOR,
+};
+
 #[cfg(feature = "num")]
-use ::num::{Complex, Float, One};
-
-#[cfg(feature = "nih_plug")]
-use ::nih_plug::prelude::Enum;
-
-use simd_util::{math, simd::*, smoothing::*, VFloat, FLOATS_PER_VECTOR};
+use num::{Complex, Float, One};
 
 pub mod one_pole;
 pub mod svf;
+
+#[inline]
+fn g<const N: usize>(w_c: VFloat<N>) -> VFloat<N>
+where
+    LaneCount<N>: SupportedLaneCount,
+{
+    math::tan_half_x(w_c)
+}
 
 #[derive(Default, Clone, Copy)]
 /// Transposed Direct Form II Trapezoidal Integrator, but without the `0.5` pre-gain.
@@ -31,7 +41,7 @@ where
     LaneCount<N>: SupportedLaneCount,
 {
     s: VFloat<N>,
-    out: VFloat<N>
+    out: VFloat<N>,
 }
 
 impl<const N: usize> Integrator<N>

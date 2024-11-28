@@ -1,31 +1,6 @@
 use super::*;
 
-#[cfg_attr(feature = "nih_plug", derive(Enum))]
-#[derive(PartialEq, Eq, Clone, Copy, Debug, Default, PartialOrd, Ord, Hash)]
-pub enum FilterMode {
-    #[cfg_attr(feature = "nih_plug", name = "Bypass")]
-    #[default]
-    ID,
-    #[cfg_attr(feature = "nih_plug", name = "Lowpass")]
-    LP,
-    #[cfg_attr(feature = "nih_plug", name = "Bandpass")]
-    BP,
-    #[cfg_attr(feature = "nih_plug", name = "Unit Bandpass")]
-    BP1,
-    #[cfg_attr(feature = "nih_plug", name = "Highpass")]
-    HP,
-    #[cfg_attr(feature = "nih_plug", name = "Allpass")]
-    AP,
-    #[cfg_attr(feature = "nih_plug", name = "Notch")]
-    NCH,
-    #[cfg_attr(feature = "nih_plug", name = "Low shelf")]
-    LSH,
-    #[cfg_attr(feature = "nih_plug", name = "Band shelf")]
-    BSH,
-    #[cfg_attr(feature = "nih_plug", name = "High Shelf")]
-    HSH,
-}
-
+/// Smoothers for parameters of an SVF filter
 pub struct SVFParamsSmoothed<const N: usize = FLOATS_PER_VECTOR>
 where
     LaneCount<N>: SupportedLaneCount,
@@ -40,23 +15,18 @@ where
     LaneCount<N>: SupportedLaneCount,
 {
     #[inline]
-    pub fn get_g(&self) -> VFloat<N> {
-        self.g.value
+    pub fn get_g(&self) -> &VFloat<N> {
+        &self.g.value
     }
 
     #[inline]
-    pub fn get_res(&self) -> VFloat<N> {
-        self.r.value
+    pub fn get_res(&self) -> &VFloat<N> {
+        &self.r.value
     }
 
     #[inline]
-    pub fn get_root_gain(&self) -> VFloat<N> {
-        self.k.value
-    }
-
-    #[inline]
-    fn g(w_c: VFloat<N>) -> VFloat<N> {
-        math::tan_half_x(w_c)
+    pub fn get_root_gain(&self) -> &VFloat<N> {
+        &self.k.value
     }
 
     #[inline]
@@ -70,29 +40,26 @@ where
     #[inline]
     pub fn set_params_low_shelving(&mut self, w_c: VFloat<N>, res: VFloat<N>, gain: VFloat<N>) {
         let m2 = gain.sqrt();
-        let g = Self::g(w_c);
-        self.set_values(g / m2.sqrt(), res, m2);
+        self.set_values(g(w_c) / m2.sqrt(), res, m2);
     }
 
     /// call this if you intend to use _only_ the band-shelving output
     #[inline]
     pub fn set_params_band_shelving(&mut self, w_c: VFloat<N>, res: VFloat<N>, gain: VFloat<N>) {
-        let g = Self::g(w_c);
-        self.set_values(g, res / gain.sqrt(), gain);
+        self.set_values(g(w_c), res / gain.sqrt(), gain);
     }
 
     /// call this if you intend to use _only_ the high-shelving output
     #[inline]
     pub fn set_params_high_shelving(&mut self, w_c: VFloat<N>, res: VFloat<N>, gain: VFloat<N>) {
         let m2 = gain.sqrt();
-        let g = Self::g(w_c);
-        self.set_values(g * m2.sqrt(), res, m2);
+        self.set_values(g(w_c) * m2.sqrt(), res, m2);
     }
 
     /// call this if you do not intend to use the shelving outputs
     #[inline]
     pub fn set_params(&mut self, w_c: VFloat<N>, res: VFloat<N>, gain: VFloat<N>) {
-        self.set_values(Self::g(w_c), res, gain);
+        self.set_values(g(w_c), res, gain);
     }
 
     #[inline]
@@ -118,8 +85,7 @@ where
         inc: VFloat<N>,
     ) {
         let m2 = gain.sqrt();
-        let g = Self::g(w_c);
-        self.set_values_smoothed(g / m2.sqrt(), res, m2, inc);
+        self.set_values_smoothed(g(w_c) / m2.sqrt(), res, m2, inc);
     }
 
     /// Like `Self::set_params_band_shelving` but with smoothing
@@ -131,8 +97,7 @@ where
         gain: VFloat<N>,
         inc: VFloat<N>,
     ) {
-        let g = Self::g(w_c);
-        self.set_values_smoothed(g, res / gain.sqrt(), gain, inc);
+        self.set_values_smoothed(g(w_c), res / gain.sqrt(), gain, inc);
     }
 
     /// Like `Self::set_params_high_shelving` but with smoothing
@@ -145,8 +110,7 @@ where
         inc: VFloat<N>,
     ) {
         let m2 = gain.sqrt();
-        let g = Self::g(w_c);
-        self.set_values_smoothed(g * m2.sqrt(), res, m2, inc);
+        self.set_values_smoothed(g(w_c) * m2.sqrt(), res, m2, inc);
     }
 
     /// Like `Self::set_params_non_shelving` but with smoothing
@@ -158,7 +122,7 @@ where
         gain: VFloat<N>,
         inc: VFloat<N>,
     ) {
-        self.g.set_target(Self::g(w_c), inc);
+        self.g.set_target(g(w_c), inc);
         self.r.set_target(res, inc);
         self.k.set_all_vals_instantly(gain);
     }
@@ -174,32 +138,6 @@ where
         self.k.tick1();
         self.r.tick1();
         self.g.tick1();
-    }
-
-    #[inline]
-    pub fn update_function(mode: FilterMode) -> fn(&mut Self, VFloat<N>, VFloat<N>, VFloat<N>) {
-        use FilterMode::*;
-
-        match mode {
-            LSH => Self::set_params_low_shelving,
-            BSH => Self::set_params_band_shelving,
-            HSH => Self::set_params_high_shelving,
-            _ => Self::set_params,
-        }
-    }
-
-    #[inline]
-    pub fn smoothing_update_function(
-        mode: FilterMode,
-    ) -> fn(&mut Self, VFloat<N>, VFloat<N>, VFloat<N>, VFloat<N>) {
-        use FilterMode::*;
-
-        match mode {
-            LSH => Self::set_params_low_shelving_smoothed,
-            BSH => Self::set_params_band_shelving_smoothed,
-            HSH => Self::set_params_high_shelving_smoothed,
-            _ => Self::set_params_smoothed,
-        }
     }
 }
 
@@ -294,7 +232,7 @@ where
     #[inline]
     pub fn get_allpass(&self) -> VFloat<N> {
         // 2 * bp1 - x
-        Simd::splat(2.).mul_add(*self.get_unit_bandpass(), -self.x)
+        self.get_unit_bandpass().mul_add(Simd::splat(2.), -self.x)
     }
 
     #[inline]
@@ -334,51 +272,12 @@ where
         let &lp = self.get_lowpass();
         root_gain.mul_add(root_gain.mul_add(lp, bp1), hp)
     }
-
-    pub fn get_output_function(
-        mode: FilterMode,
-    ) -> fn(&Self, VFloat<N>) -> VFloat<N> {
-        use FilterMode::*;
-
-        match mode {
-            ID => |f, _g| *f.get_passthrough(),
-            LP => |f, _g| *f.get_lowpass(),
-            BP => |f, _g| *f.get_bandpass(),
-            BP1 => |f, _g| *f.get_unit_bandpass(),
-            HP => |f, _g| *f.get_highpass(),
-            AP => |f, _g| f.get_allpass(),
-            NCH => |f, _g| f.get_notch(),
-            LSH => Self::get_low_shelf,
-            BSH => Self::get_band_shelf,
-            HSH => Self::get_high_shelf,
-        }
-    }
 }
 
 #[cfg(feature = "num")]
 pub mod impedence {
 
     use super::*;
-
-    pub fn transfer_function<T: Float>(
-        filter_mode: FilterMode,
-    ) -> fn(Complex<T>, T, T) -> Complex<T> {
-        use FilterMode::*;
-
-        match filter_mode {
-            // yay function pointer coercions
-            ID => |s, _r, _g| s,
-            LP => |s, r, _g| low_pass(s, r),
-            BP => |s, r, _g| band_pass(s, r),
-            BP1 => |s, r, _g| unit_band_pass(s, r),
-            HP => |s, r, _g| high_pass(s, r),
-            AP => |s, r, _g| all_pass(s, r),
-            NCH => |s, r, _g| notch(s, r),
-            LSH => low_shelf,
-            BSH => band_shelf,
-            HSH => high_shelf,
-        }
-    }
 
     fn two<T: Float>(res: T) -> T {
         res + res
