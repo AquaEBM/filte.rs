@@ -3,7 +3,6 @@
 use simd_util::{
     math,
     simd::{num::SimdFloat, LaneCount, Simd, StdFloat, SupportedLaneCount},
-    smoothing::{LogSmoother, Smoother},
     VFloat, FLOATS_PER_VECTOR,
 };
 
@@ -14,7 +13,7 @@ pub mod one_pole;
 pub mod svf;
 
 #[inline]
-fn g<const N: usize>(w_c: VFloat<N>) -> VFloat<N>
+pub fn g<const N: usize>(w_c: VFloat<N>) -> VFloat<N>
 where
     LaneCount<N>: SupportedLaneCount,
 {
