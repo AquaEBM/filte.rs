@@ -4,7 +4,7 @@ use super::*;
 /// one in the book The Art of VA Filter Design by Vadim Zavalishin
 ///
 /// Capable of outputing many different shapes,
-/// (highpass, lowpass, bandpass, notch, shelving....)
+/// (highpass, lowpass, bandpass, allpass, notch, shelving....)
 #[derive(Default)]
 pub struct SVF<const N: usize = FLOATS_PER_VECTOR>
 where
@@ -112,43 +112,52 @@ where
 }
 
 #[cfg(feature = "num")]
-pub mod impedence {
+pub mod trnasfer {
 
     use super::*;
 
+    #[inline]
     fn two<T: Float>(res: T) -> T {
         res + res
     }
 
+    #[inline]
     fn h_denominator<T: Float>(s: Complex<T>, res: T) -> Complex<T> {
         s * (s + two(res)) + T::one()
     }
 
+    #[inline]
     pub fn low_pass<T: Float>(s: Complex<T>, res: T) -> Complex<T> {
         h_denominator(s, res).finv()
     }
 
+    #[inline]
     pub fn band_pass<T: Float>(s: Complex<T>, res: T) -> Complex<T> {
         s.fdiv(h_denominator(s, res))
     }
 
+    #[inline]
     pub fn unit_band_pass<T: Float>(s: Complex<T>, res: T) -> Complex<T> {
         band_pass(s, res).scale(two(res))
     }
 
+    #[inline]
     pub fn high_pass<T: Float>(s: Complex<T>, res: T) -> Complex<T> {
         (s * s).fdiv(h_denominator(s, res))
     }
 
+    #[inline]
     pub fn all_pass<T: Float>(s: Complex<T>, res: T) -> Complex<T> {
         let bp1 = unit_band_pass(s, res);
         bp1 + bp1 - Complex::one()
     }
 
+    #[inline]
     pub fn notch<T: Float>(s: Complex<T>, res: T) -> Complex<T> {
         Complex::<T>::one() - unit_band_pass(s, res)
     }
 
+    #[inline]
     pub fn tilting<T: Float>(s: Complex<T>, res: T, gain: T) -> Complex<T> {
         let m2 = gain.sqrt();
         let m = m2.sqrt();
@@ -156,16 +165,19 @@ pub mod impedence {
         (s * s + sm.scale(two(res)) + m2.recip()).fdiv(h_denominator(sm, res))
     }
 
+    #[inline]
     pub fn low_shelf<T: Float>(s: Complex<T>, res: T, gain: T) -> Complex<T> {
         let m2 = gain.sqrt();
         tilting(s, res, gain.recip()).scale(m2)
     }
 
+    #[inline]
     pub fn band_shelf<T: Float>(s: Complex<T>, res: T, gain: T) -> Complex<T> {
         let m = gain.sqrt();
         (s * (s + two(res) * m) + T::one()).fdiv(h_denominator(s, res / m))
     }
 
+    #[inline]
     pub fn high_shelf<T: Float>(s: Complex<T>, res: T, gain: T) -> Complex<T> {
         let m2 = gain.sqrt();
         tilting(s, res, gain).scale(m2)

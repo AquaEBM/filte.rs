@@ -9,12 +9,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
 
 [[package]]
-name = "cfg-if"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
-
-[[package]]
 name = "core_simd"
 version = "0.1.0"
 source = "git+https://github.com/rust-lang/portable-simd.git#49176aebc6ed496ddbea3def548adcfe1679b4bb"
@@ -103,9 +97,8 @@ dependencies = [
 [[package]]
 name = "simd_util"
 version = "0.1.0"
-source = "git+https://github.com/AquaEBM/simd_util#06b9cc4c16f350dec9e011e5fff204e3c32d43f8"
+source = "git+https://github.com/AquaEBM/simd_util#7b6b3aff8b828e79fe9c4c63a645efb5af327aea"
 dependencies = [
- "cfg-if",
  "core_simd",
  "std_float",
 ]

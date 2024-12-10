@@ -2,7 +2,7 @@
 
 use simd_util::{
     math,
-    simd::{num::SimdFloat, LaneCount, Simd, StdFloat, SupportedLaneCount},
+    simd::{LaneCount, Simd, StdFloat, SupportedLaneCount},
     VFloat, FLOATS_PER_VECTOR,
 };
 
@@ -12,15 +12,6 @@ use num::{Complex, Float, One};
 pub mod one_pole;
 pub mod svf;
 
-#[inline]
-pub fn g<const N: usize>(w_c: VFloat<N>) -> VFloat<N>
-where
-    LaneCount<N>: SupportedLaneCount,
-{
-    math::tan_half_x(w_c)
-}
-
-#[derive(Default, Clone, Copy)]
 /// Transposed Direct Form II Trapezoidal Integrator, but without the `0.5` pre-gain.
 ///
 /// Specifically, let `x[n]` be the input signal, `y[n]` be the output signal, and `v[n]`
@@ -35,6 +26,7 @@ where
 /// Transfer function:
 ///
 /// `(z + 1) / (z - 1)`
+#[derive(Default, Clone, Copy)]
 pub struct Integrator<const N: usize = FLOATS_PER_VECTOR>
 where
     LaneCount<N>: SupportedLaneCount,

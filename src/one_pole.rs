@@ -1,14 +1,22 @@
 use super::*;
 
+/// `w_c` must be in the range [0 ; pi[
+/// let `g = tan(w_c/2)`
+/// returns `g / (1 + g)`
 #[inline]
 pub fn g1<const N: usize>(w_c: VFloat<N>) -> VFloat<N>
 where
     LaneCount<N>: SupportedLaneCount,
 {
-    let g = g(w_c).abs();
+    let g = math::tan_half_x(w_c);
     g / (Simd::splat(1.) + g)
 }
 
+/// Digital implementation of the analogue one-pole filter. Based on the
+/// one in the book The Art of VA Filter Design by Vadim Zavalishin.
+///
+/// Capable of outputing many different shapes,
+/// (highpass, lowpass, allpass, shelving....)
 #[derive(Default)]
 pub struct OnePole<const N: usize = FLOATS_PER_VECTOR>
 where
@@ -56,7 +64,7 @@ where
 
     #[inline]
     pub fn get_highpass(&self) -> VFloat<N> {
-        self.x - self.get_lowpass()
+        self.get_passthrough() - self.get_lowpass()
     }
 
     #[inline]
@@ -75,31 +83,38 @@ pub mod transfer {
 
     use super::*;
 
+    #[inline]
     fn h_denominator<T: Float>(s: Complex<T>) -> Complex<T> {
         s + T::one()
     }
 
+    #[inline]
     pub fn low_pass<T: Float>(s: Complex<T>) -> Complex<T> {
         h_denominator(s).finv()
     }
 
+    #[inline]
     pub fn all_pass<T: Float>(s: Complex<T>) -> Complex<T> {
         (-s + T::one()).fdiv(h_denominator(s))
     }
 
+    #[inline]
     pub fn high_pass<T: Float>(s: Complex<T>) -> Complex<T> {
         s.fdiv(h_denominator(s))
     }
 
+    #[inline]
     pub fn low_shelf<T: Float>(s: Complex<T>, gain: T) -> Complex<T> {
         tilting(s, gain.recip()).scale(gain.sqrt())
     }
 
+    #[inline]
     pub fn tilting<T: Float>(s: Complex<T>, gain: T) -> Complex<T> {
         let m = gain.sqrt();
         (s.scale(m) + T::one()) / (s + m)
     }
 
+    #[inline]
     pub fn high_shelf<T: Float>(s: Complex<T>, gain: T) -> Complex<T> {
         tilting(s, gain).scale(gain.sqrt())
     }
