@@ -97,7 +97,7 @@ dependencies = [
 [[package]]
 name = "simd_util"
 version = "0.1.0"
-source = "git+https://github.com/AquaEBM/simd_util#7b6b3aff8b828e79fe9c4c63a645efb5af327aea"
+source = "git+https://github.com/AquaEBM/simd_util#b160a25944d268e9b462ea3b94da5953f7c6a5a2"
 dependencies = [
  "core_simd",
  "std_float",
