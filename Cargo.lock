@@ -11,7 +11,7 @@ checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
 [[package]]
 name = "core_simd"
 version = "0.1.0"
-source = "git+https://github.com/rust-lang/portable-simd.git#b4f4785d9b070111b8ee9df60a5344af78479267"
+source = "git+https://github.com/rust-lang/portable-simd.git#e8b522d82a12009d80f8c92eb8f1fc7e7460f390"
 
 [[package]]
 name = "filte"
@@ -97,7 +97,7 @@ dependencies = [
 [[package]]
 name = "simd_util"
 version = "0.1.0"
-source = "git+https://github.com/AquaEBM/simd_util#d286b97765ca55fcd18b949dfe8fe81ac2988faa"
+source = "git+https://github.com/AquaEBM/simd_util#b647e9df5654dea4aa988896d16d74451344f8e3"
 dependencies = [
  "core_simd",
  "std_float",
@@ -106,7 +106,7 @@ dependencies = [
 [[package]]
 name = "std_float"
 version = "0.1.0"
-source = "git+https://github.com/rust-lang/portable-simd.git#b4f4785d9b070111b8ee9df60a5344af78479267"
+source = "git+https://github.com/rust-lang/portable-simd.git#e8b522d82a12009d80f8c92eb8f1fc7e7460f390"
 dependencies = [
  "core_simd",
 ]

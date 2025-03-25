@@ -1,10 +1,10 @@
 use super::*;
 
-/// `w_c` must be in the range [0 ; pi[
+/// `w_c` must be in the range `[0 ; pi[`
 /// let `g = tan(w_c/2)`
 /// returns `g / (1 + g)`
 #[inline]
-pub fn g1<const N: usize>(w_c: VFloat<N>) -> VFloat<N>
+pub fn theta<const N: usize>(w_c: VFloat<N>) -> VFloat<N>
 where
     LaneCount<N>: SupportedLaneCount,
 {
@@ -35,16 +35,27 @@ where
         self.lp.reset()
     }
 
-    /// The "`tick`" method, must be called _only once_ per sample, _every sample_.
+    /// Update the filter's internal state.
     ///
-    /// Feeds `x` into the filter, which updates it's internal state accordingly.
+    /// This should be called _only once_ per sample, _every sample_
     ///
     /// After calling this, you can get different filter outputs
     /// using `Self::get_{highpass, lowpass, allpass, ...}`
+    /// 
+    /// `x` is the input sample fed to the filter
+    /// 
+    /// `theta` is the "filtering factor". `0 <= theta <= 1` must hold. Values outside of that
+    /// range may result in instability. If `0 <= w_c < pi` is the cutoff frequency of the filter, in
+    /// radians per sample, let `g = tan(w_c/2)`, then, `theta = g / (1 + g)`.
+    /// See also [the provided convenience function](theta).
+    /// 
+    /// Notice that `theta = 0 -> w_c = 0`, the output will be silent.
+    /// 
+    /// Furthermore, `theta = 1 -> w_c = pi (nyquist)`, the output will be the same as the input.
     #[inline]
-    pub fn process(&mut self, x: VFloat<N>, g1: VFloat<N>) {
+    pub fn process(&mut self, x: VFloat<N>, theta: VFloat<N>) {
         self.x = x;
-        self.lp.process((x - self.lp.state()) * g1);
+        self.lp.process((x - self.lp.state()) * theta);
     }
 
     #[inline]
@@ -58,13 +69,13 @@ where
     }
 
     #[inline]
-    pub fn get_allpass(&self) -> VFloat<N> {
-        self.get_lowpass() - self.get_highpass()
+    pub fn get_highpass(&self) -> VFloat<N> {
+        self.get_passthrough() - self.get_lowpass()
     }
 
     #[inline]
-    pub fn get_highpass(&self) -> VFloat<N> {
-        self.get_passthrough() - self.get_lowpass()
+    pub fn get_allpass(&self) -> VFloat<N> {
+        self.get_lowpass() - self.get_highpass()
     }
 
     #[inline]

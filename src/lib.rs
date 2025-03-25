@@ -49,6 +49,7 @@ where
     }
 
     #[inline]
+    /// Get thecurrent `y[n]` state
     pub fn output(&self) -> &VFloat<N> {
         &self.out
     }
