@@ -41,16 +41,16 @@ where
     ///
     /// After calling this, you can get different filter outputs
     /// using `Self::get_{highpass, lowpass, allpass, ...}`
-    /// 
+    ///
     /// `x` is the input sample fed to the filter
-    /// 
+    ///
     /// `theta` is the "filtering factor". `0 <= theta <= 1` must hold. Values outside of that
     /// range may result in instability. If `0 <= w_c < pi` is the cutoff frequency of the filter, in
     /// radians per sample, let `g = tan(w_c/2)`, then, `theta = g / (1 + g)`.
     /// See also [the provided convenience function](theta).
-    /// 
+    ///
     /// Notice that `theta = 0 -> w_c = 0`, the output will be silent.
-    /// 
+    ///
     /// Furthermore, `theta = 1 -> w_c = pi (nyquist)`, the output will be the same as the input.
     #[inline]
     pub fn process(&mut self, x: VFloat<N>, theta: VFloat<N>) {

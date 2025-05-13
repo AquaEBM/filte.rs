@@ -34,12 +34,12 @@ where
     ///
     /// After calling this, you can get different filter outputs
     /// using `Self::get_{highpass, bandpass, notch, ...}`
-    /// 
+    ///
     /// `x` is the input sample fed to the filter.
-    /// 
-    /// `g` is the integrator pre-gain: If `0 <= w_c < pi` is the cutoff frequency, 
+    ///
+    /// `g` is the integrator pre-gain: If `0 <= w_c < pi` is the cutoff frequency,
     /// in radians per sample, then, `g = tan(w_c/2)`.
-    /// 
+    ///
     /// `res` is the resonance value of the filter. `0 <= res < 2` must hold.
     /// Values outside of that range may result in instability.
     #[inline]
